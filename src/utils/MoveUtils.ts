@@ -105,8 +105,9 @@ const isValid = (move: Move): boolean => {
     );
 }
 
-const isPotentialStraight = ({ cards }: Move) => {
-    if (cards.length <= 1) return false;
+const isPotentialStraight = (move: Move) => {
+    const { cards } = move;
+    if (cards.length <= 1 || isStraight(move)) return false;
 
     const lowestCard = min(cards);
 
