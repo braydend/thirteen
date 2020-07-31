@@ -7,10 +7,10 @@ import SuitEnum from '../../enum/Suit';
 
 export type Props = {
     card: CardType,
-    onClick: () => void,
+    onClick?: () => void,
 };
 
-const Card: React.FC<Props> = ({ card: { value, suit }, onClick }) => {
+const Card: React.FC<Props> = ({ card: { value, suit }, onClick = () => {} }) => {
     const isRed = suit === SuitEnum.Diamonds || suit === SuitEnum.Hearts;
 
     return (
