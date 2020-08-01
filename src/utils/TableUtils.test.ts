@@ -10,16 +10,15 @@ describe('tableUtils', () => {
             let table: Table;
             
             beforeEach(() => {
-                table = {deck: [], isReset: true, pile: []};
+                table = { isReset: true, pile: [] };
             });
 
             test('single card', () => {
                 const aceOfSpades: Card = { suit: SuitEnum.Spades, value: ValueEnum.Ace};
                 const move: Move = { cards: [aceOfSpades], type: MoveEnum.SingleCard };
 
-                const result = playMove(table, move);
+                playMove(table, move);
 
-                expect(result).toStrictEqual(table);
                 expect(table.pile).toHaveLength(1);
             });            
             
@@ -28,9 +27,8 @@ describe('tableUtils', () => {
                 const aceOfHearts: Card = { suit: SuitEnum.Hearts, value: ValueEnum.Ace};
                 const move: Move = { cards: [aceOfSpades, aceOfHearts], type: MoveEnum.MatchingValue };
 
-                const result = playMove(table, move);
+                playMove(table, move);
 
-                expect(result).toStrictEqual(table);
                 expect(table.pile).toHaveLength(1);
             });            
             
@@ -40,9 +38,8 @@ describe('tableUtils', () => {
                 const kingOfSpades: Card = { suit: SuitEnum.Hearts, value: ValueEnum.King};
                 const move: Move = { cards: [kingOfSpades, aceOfSpades, twoOfSpades], type: MoveEnum.Straight };
                 
-                const result = playMove(table, move);
+                playMove(table, move);
 
-                expect(result).toStrictEqual(table);
                 expect(table.pile).toHaveLength(1);
             });
         });
