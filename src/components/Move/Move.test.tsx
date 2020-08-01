@@ -6,6 +6,8 @@ import ValueEnum from "../../enum/Value";
 import { Card, Move as MoveType } from "../../types";
 import MoveEnum from "../../enum/Move";
 
+const { getByLabelText, getByText, getAllByLabelText } = screen;
+
 const setUp = (customProps?: Partial<Props>): RenderResult => {
     const defaultProps: Props = { move: { cards: [] }, onCardClick: jest.fn() };
     const props = { ...defaultProps, ...customProps };
@@ -15,7 +17,7 @@ const setUp = (customProps?: Partial<Props>): RenderResult => {
 
 describe('<Move />', () => {
     test('renders correctly', () => {
-        const { getByLabelText } = setUp();
+        setUp();
         const moveContainer = getByLabelText('move');
 
         expect(moveContainer).toBeInTheDocument();
@@ -26,31 +28,31 @@ describe('<Move />', () => {
             const move: MoveType = { cards: [], type: MoveEnum.SingleCard };
             setUp({ move });
 
-            screen.getByText(MoveEnum.SingleCard);
+            getByText(MoveEnum.SingleCard);
         });
         test('matching value', () => {
             const move: MoveType = { cards: [], type: MoveEnum.MatchingValue };
             setUp({ move });
 
-            screen.getByText(MoveEnum.MatchingValue);
+            getByText(MoveEnum.MatchingValue);
         });
         test('straight', () => {
             const move: MoveType = { cards: [], type: MoveEnum.Straight };
             setUp({ move });
 
-            screen.getByText(MoveEnum.Straight);
+            getByText(MoveEnum.Straight);
         });
         test('potential three consecutive pairs (CHOP)', () => {
             const move: MoveType = { cards: [], type: MoveEnum.ThreeConsecutivePairs };
             setUp({ move });
 
-            screen.getByText(MoveEnum.ThreeConsecutivePairs);
+            getByText(MoveEnum.ThreeConsecutivePairs);
         });
         test('three consecutive pairs (CHOP)', () => {
             const move: MoveType = { cards: [], type: MoveEnum.ThreeConsecutivePairs };
             setUp({ move });
 
-            screen.getByText(MoveEnum.ThreeConsecutivePairs);
+            getByText(MoveEnum.ThreeConsecutivePairs);
         });
     });
 
@@ -59,7 +61,7 @@ describe('<Move />', () => {
             { suit: SuitEnum.Diamonds, value: ValueEnum.Ace },
             { suit: SuitEnum.Diamonds, value: ValueEnum.Two },
         ];
-        const { getAllByLabelText } = setUp({ move: { cards } });
+        setUp({ move: { cards } });
         const cardComponents = getAllByLabelText('card');
 
         expect(cardComponents).toHaveLength(2);

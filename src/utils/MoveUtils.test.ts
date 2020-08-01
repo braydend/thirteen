@@ -229,15 +229,15 @@ describe('MoveUtils', () => {
                     fourOfSpades,
                     fiveOfSpades,
                 ]};
-            const hearts: Move = { cards: [
-                threeOfHearts,
-                fourOfHearts,
-                fiveOfHearts,
-                sixOfHearts,
-            ]};
+                const hearts: Move = { cards: [
+                    threeOfHearts,
+                    fourOfHearts,
+                    fiveOfHearts,
+                    sixOfHearts,
+                ]};
 
-            expect(isBeatenBy(hearts, spades)).toBe(false);                
-            expect(isBeatenBy(spades, hearts)).toBe(false); 
+                expect(isBeatenBy(hearts, spades)).toBe(false);                
+                expect(isBeatenBy(spades, hearts)).toBe(false); 
             });
 
             describe('same value', () => {
@@ -419,7 +419,7 @@ describe('MoveUtils', () => {
                 test('single card ([2] vs [3,3,4,4,5,5]', () => {
                     const two: Move = { cards: [{ suit: SuitEnum.Hearts, value: ValueEnum.Two }] };
 
-                        assertABeatsB(threeThreeFourFourFiveFive, two);
+                    assertABeatsB(threeThreeFourFourFiveFive, two);
                 });
                 describe('matching values', () => {
                     test('pair ([2,2] vs [3,3,4,4,5,5])', () => {
