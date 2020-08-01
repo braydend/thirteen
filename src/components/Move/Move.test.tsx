@@ -9,7 +9,12 @@ import MoveEnum from "../../enum/Move";
 const { getByLabelText, getByText, getAllByLabelText } = screen;
 
 const setUp = (customProps?: Partial<Props>): RenderResult => {
-    const defaultProps: Props = { move: { cards: [] }, onCardClick: jest.fn() };
+    const defaultProps: Props = { 
+        move: { cards: [] }, 
+        onCardClick: jest.fn(),
+        onPlay: jest.fn(),
+        onReset: jest.fn(),
+    };
     const props = { ...defaultProps, ...customProps };
 
     return render(<Move {...props} />);
@@ -21,6 +26,8 @@ describe('<Move />', () => {
         const moveContainer = getByLabelText('move');
 
         expect(moveContainer).toBeInTheDocument();
+        expect(screen.getByText('Play')).toBeInTheDocument();
+        expect(screen.getByText('Reset')).toBeInTheDocument();
     });
 
     describe('renders move type', () => {

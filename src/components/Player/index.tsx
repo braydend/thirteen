@@ -8,9 +8,10 @@ import { addCardsToMove, removeCardFromMove } from '../../utils/MoveUtils';
 export type Props = {
     name: string;
     hand: HandType;
+    onPlay: (move: MoveType) => void,
 };
 
-const Player: React.FC<Props> = ({ name, hand: initialHand }) => {
+const Player: React.FC<Props> = ({ name, hand: initialHand, onPlay }) => {
     const [hand, setHand] = useState<HandType>(initialHand);
     const [move, setMove] = useState<MoveType>({ cards: [] });
 
@@ -24,10 +25,29 @@ const Player: React.FC<Props> = ({ name, hand: initialHand }) => {
         setMove(removeCardFromMove(move, cardToMove));
     };
 
+    const resetMove = ({ cards }: MoveType) => {
+        setHand(addCardsToHand(hand, cards));
+        setMove({ cards: [] });
+    };
+
+    const playMove = (move: MoveType) => {
+        onPlay(move);
+        setMove({ cards: [] });
+    };
+
+    const hasMadeMove = move.cards.length !== 0;
+
     return (
         <div aria-label="player">
             {name}
-            <Move move={move} onCardClick={moveCardFromMoveToHand} />
+            {hasMadeMove && (
+                <Move 
+                    move={move} 
+                    onCardClick={moveCardFromMoveToHand} 
+                    onReset={resetMove} 
+                    onPlay={playMove} 
+                />
+            )}
             <Hand hand={hand} onCardClick={moveCardFromHandToMove} />
         </div>
     );
