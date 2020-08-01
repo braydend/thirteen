@@ -1,4 +1,9 @@
 .move {
     display: flex;
+    flex-direction: column;
     background-color: blue;
+}
+
+.cards {
+    display: flex;
 }

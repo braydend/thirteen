@@ -28,5 +28,4 @@ export type Player = {
 export type Table = {
     pile: Move[],
     isReset: boolean,
-    deck: Deck,
 };
