@@ -1,8 +1,10 @@
 import { createDeck, shuffleDeck, dealDeck } from "./GameUtils";
 import SuitEnum from "../enum/Suit";
 import ValueEnum from "../enum/Value";
+import { Deck, Hand } from "../types";
+import { toString } from "./CardUtils";
 
-const validFullDeck = [
+const validFullDeck: Deck = [
     { suit: SuitEnum.Clubs, value: ValueEnum.Three },
     { suit: SuitEnum.Clubs, value: ValueEnum.Four },
     { suit: SuitEnum.Clubs, value: ValueEnum.Five },
@@ -98,9 +100,17 @@ describe('GameUtils', () => {
         test('all hands dealt are unique', () => {
             const [one,two,three,four] = dealDeck(createDeck());
 
-            expect(one.hand.cards.filter(card => two.hand.cards.includes(card))).toHaveLength(0);
-            expect(two.hand.cards.filter(card => three.hand.cards.includes(card))).toHaveLength(0);
-            expect(three.hand.cards.filter(card => four.hand.cards.includes(card))).toHaveLength(0);
+            const doesHandContainSameCard = (handA: Hand) => (handB: Hand) => {
+                return handA.cards.find(cardOne => (
+                    handB.cards.forEach(cardTwo => {
+                        return (toString(cardOne) === toString(cardTwo));
+                    })
+                ));
+            };
+
+            expect(doesHandContainSameCard(one.hand)(two.hand)).toBeFalsy();
+            expect(doesHandContainSameCard(two.hand)(three.hand)).toBeFalsy();
+            expect(doesHandContainSameCard(three.hand)(four.hand)).toBeFalsy();
         });
     });
 });

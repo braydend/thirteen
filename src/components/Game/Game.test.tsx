@@ -1,13 +1,13 @@
 import React from "react";
-import { render, RenderResult, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import Game from ".";
 
+const { getAllByLabelText } = screen;
+
 describe('<Game />', () => {
-    const setUp = (): RenderResult => render(<Game />);
-
     test('renders correctly', async () => {
-        setUp();
+        render(<Game />);
 
-        expect(screen.getAllByLabelText('player')).toHaveLength(4);
+        expect(getAllByLabelText('player')).toHaveLength(4);
     });
 });

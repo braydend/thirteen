@@ -7,7 +7,7 @@ import MoveEnum from "../enum/Move";
 describe('tableUtils', () => {
     describe('playMove', () => {
         describe('table is reset', () => {
-            let table: Table;;
+            let table: Table;
             
             beforeEach(() => {
                 table = {deck: [], isReset: true, pile: []};
