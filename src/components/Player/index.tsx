@@ -4,6 +4,7 @@ import Hand from '../Hand';
 import Move from '../Move';
 import { addCardsToHand, removeCardFromHand } from '../../utils/HandUtils';
 import { addCardsToMove, removeCardFromMove } from '../../utils/MoveUtils';
+import './player.css';
 
 export type Props = {
     name: string;
@@ -14,15 +15,26 @@ export type Props = {
 const Player: React.FC<Props> = ({ name, hand: initialHand, onPlay }) => {
     const [hand, setHand] = useState<HandType>(initialHand);
     const [move, setMove] = useState<MoveType>({ cards: [] });
+    const [error, setError] = useState<Error>();
 
     const moveCardFromHandToMove = (cardToMove: CardType) => {
-        setHand(removeCardFromHand(hand, cardToMove));
-        setMove(addCardsToMove(move, [cardToMove]));
+        setError(undefined);
+        try {
+            setMove(addCardsToMove(move, [cardToMove]));
+            setHand(removeCardFromHand(hand, cardToMove));
+        } catch (e) {
+            setError(e);
+        }
     };    
     
     const moveCardFromMoveToHand = (cardToMove: CardType) => {
-        setHand(addCardsToHand(hand, [cardToMove]));
-        setMove(removeCardFromMove(move, cardToMove));
+        setError(undefined);
+        try {
+            setHand(addCardsToHand(hand, [cardToMove]));
+            setMove(removeCardFromMove(move, cardToMove));
+        } catch (e) {
+            setError(e);
+        }
     };
 
     const resetMove = ({ cards }: MoveType) => {
@@ -36,9 +48,11 @@ const Player: React.FC<Props> = ({ name, hand: initialHand, onPlay }) => {
     };
 
     const hasMadeMove = move.cards.length !== 0;
+    const hasError = error !== undefined;
 
     return (
         <div aria-label="player">
+            {hasError && <div className="error">Hold up! {error?.message}</div>}
             {name}
             {hasMadeMove && (
                 <Move 
