@@ -38,13 +38,19 @@ const Player: React.FC<Props> = ({ name, hand: initialHand, onPlay }) => {
     };
 
     const resetMove = ({ cards }: MoveType) => {
+        setError(undefined);
         setHand(addCardsToHand(hand, cards));
         setMove({ cards: [] });
     };
 
     const playMove = (move: MoveType) => {
-        onPlay(move);
-        setMove({ cards: [] });
+        setError(undefined);
+        try {
+            onPlay(move);
+            setMove({ cards: [] });
+        } catch (e) {
+            setError(e);
+        }
     };
 
     const hasMadeMove = move.cards.length !== 0;
