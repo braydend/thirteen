@@ -1,0 +1,57 @@
+datasource db {
+    provider = "sqlite" 
+    url = "***"
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Card {
+    id          Int     @id @default(autoincrement())
+    suit        Suit    @relation(fields:  [suitValue], references: [value])
+    suitValue   Int
+    value       Value   @relation(fields:  [valueValue], references: [value])
+    valueValue  Int
+    hands       Hand[]  @relation(references: [id])
+    moves       Move[]  @relation(references: [id])
+}
+
+model Game {
+    id              String      @id @default(uuid())
+    createdAt       DateTime    @default(now())
+    players         Player[]    @relation(references: [id])
+    pile            Move[]      
+}
+
+model Hand {
+    id  String @id @default(uuid())
+    cards Card[] @relation(references: [id])
+}
+
+model Move {
+    id          String  @id @default(uuid())
+    player      Player  @relation(fields: [playerId], references: [id])
+    playerId    String 
+    cards       Card[]  @relation(references: [id])
+    game        Game    @relation(fields: [gameId], references: [id])
+    gameId      String
+}
+
+model Player {
+    id          String      @id @default(uuid())
+    createdAt   DateTime    @default(now())
+    hand        Hand        @relation(fields: [handId], references: [id])
+    handId      String
+    games       Game[]      @relation(references: [id])
+}
+
+model Suit {
+    value       Int     @id @default(autoincrement())
+    name        String
+}
+
+model Value {
+    value       Int     @id @default(autoincrement())
+    name        String
+}
