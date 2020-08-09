@@ -1,0 +1,22 @@
+{
+  "name": "thirteen-server",
+  "version": "1.0.0",
+  "description": "Server for playing thirteen",
+  "main": "index.js",
+  "scripts": {
+    "seed": "tsc ./src/Prisma/seed-db.ts && node ./src/Prisma/seed-db.js",
+    "start": "tsc && node ./build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "braydend",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^2.4.1",
+    "graphql-tag": "^2.11.0",
+    "graphql-yoga": "^1.18.3",
+    "typescript": "^3.9.7"
+  },
+  "devDependencies": {
+    "@prisma/cli": "^2.4.1"
+  }
+}
