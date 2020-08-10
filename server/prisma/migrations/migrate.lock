@@ -4,3 +4,4 @@
 20200809090510-add-basic-game-models
 20200809113826-card-suit-and-value-unique-constraint
 20200810100323-hardcode-suit-and-value-values
+20200810104104-make-player-hands-optional
