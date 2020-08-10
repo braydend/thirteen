@@ -1,6 +1,6 @@
 datasource db {
     provider = "sqlite" 
-    url      = "file:./thirteen.db"
+    url = "***"
 }
 
 generator client {
@@ -48,11 +48,11 @@ model Player {
 }
 
 model Suit {
-    value       Int     @id
+    value       Int     @id @default(autoincrement())
     name        String  @unique
 }
 
 model Value {
-    value       Int     @id
+    value       Int     @id @default(autoincrement())
     name        String  @unique
 }
