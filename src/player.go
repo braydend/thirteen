@@ -26,3 +26,13 @@ func NewPlayer(name string) Player {
 func (player *Player) AddCard(card Card) {
 	player.cards = append(player.cards, card)
 }
+
+func (player *Player) HasCard(suit Suit, value Value) bool {
+	for _, card := range player.cards {
+		if card.Suit == suit && card.Value == value {
+			return true
+		}
+	}
+
+	return false
+}

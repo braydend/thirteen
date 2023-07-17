@@ -3,8 +3,9 @@ package thirteen
 import "fmt"
 
 type Game struct {
-	pile    []Card
-	players [4]Player
+	pile         []Card
+	players      [4]Player
+	activePlayer Player
 }
 
 func NewGame() Game {
@@ -18,10 +19,19 @@ func NewGame() Game {
 
 	Deal(deck, &players)
 
-	return Game{pile: []Card{}, players: players}
+	var activePlayer Player
+
+	for _, player := range players {
+		if player.HasCard(SPADE, THREE) {
+			activePlayer = player
+		}
+	}
+
+	return Game{pile: []Card{}, players: players, activePlayer: activePlayer}
 }
 
 func (game Game) ToString() (out string) {
+	out = fmt.Sprintf("%sActive Player: %s\n", out, game.activePlayer.name)
 	for _, player := range game.players {
 		out = fmt.Sprintf("%sPlayer: %s\n", out, player.name)
 		out = fmt.Sprintf("%sCards:\n", out)
