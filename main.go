@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	newCard := card.NewCard(card.THREE, card.DIAMOND)
+	deck := card.NewDeck()
 
-	fmt.Printf("card: %v", newCard)
+	fmt.Printf("sorted deck:\n%v\n", card.StringifyDeck(card.SortDeck(deck)))
+	fmt.Printf("shuffled deck:\n%v\n", card.StringifyDeck(card.ShuffleDeck(deck)))
 }
