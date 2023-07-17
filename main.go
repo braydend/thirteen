@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	card "github.com/braydend/thirteen/src"
+)
 
 func main() {
-	fmt.Println("Hello world")
+	newCard := card.NewCard(card.THREE, card.DIAMOND)
+
+	fmt.Printf("card: %v", newCard)
 }
