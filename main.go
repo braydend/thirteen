@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	card "github.com/braydend/thirteen/src"
+	thirteen "github.com/braydend/thirteen/src"
 )
 
 func main() {
-	deck := card.NewDeck()
+	deck := thirteen.NewDeck()
 
-	fmt.Printf("sorted deck:\n%v\n", card.StringifyDeck(card.SortDeck(deck)))
-	fmt.Printf("shuffled deck:\n%v\n", card.StringifyDeck(card.ShuffleDeck(deck)))
+	fmt.Printf("sorted deck:\n%v\n", thirteen.StringifyDeck(thirteen.SortDeck(deck)))
+	fmt.Printf("shuffled deck:\n%v\n", thirteen.StringifyDeck(thirteen.ShuffleDeck(deck)))
 }
