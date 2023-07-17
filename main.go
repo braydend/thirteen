@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	deck := thirteen.NewDeck()
+	game := thirteen.NewGame()
 
-	fmt.Printf("sorted deck:\n%v\n", thirteen.StringifyDeck(thirteen.SortDeck(deck)))
-	fmt.Printf("shuffled deck:\n%v\n", thirteen.StringifyDeck(thirteen.ShuffleDeck(deck)))
+	fmt.Printf("game:\n%v\n", game.ToString())
 }
