@@ -15,26 +15,6 @@ func NewDeck() (deck Deck) {
 	return deck
 }
 
-func StringifyDeck(deck Deck) (out string) {
-	for _, card := range deck {
-		out = out + card.ToString() + "\n"
-	}
-
-	return out
-}
-
-func SortDeck(deck Deck) Deck {
-	sort.Slice(deck, func(i, j int) bool {
-		if deck[i].Suit == deck[j].Suit {
-			return deck[i].Value < deck[j].Value
-		}
-
-		return deck[i].Suit < deck[j].Suit
-	})
-
-	return deck
-}
-
 func ShuffleDeck(deck Deck) Deck {
 	sort.Slice(deck, func(_, _ int) bool {
 		randOne := rand.Intn(5)
@@ -47,6 +27,6 @@ func ShuffleDeck(deck Deck) Deck {
 
 func Deal(deck Deck, players *[4]Player) {
 	for i, card := range deck {
-		players[i%4].AddCard(card)
+		players[i%4].AddCard(&card)
 	}
 }

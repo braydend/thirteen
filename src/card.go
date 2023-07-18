@@ -2,6 +2,7 @@ package thirteen
 
 import (
 	"fmt"
+	"sort"
 )
 
 type Suit = uint8
@@ -93,4 +94,24 @@ func (card *Card) ToString() string {
 	value := card.ValueName()
 
 	return fmt.Sprintf("%s of %ss", value, suit)
+}
+
+func SortCards(cards []Card) []Card {
+	sort.Slice(cards, func(i, j int) bool {
+		if cards[i].Suit == cards[j].Suit {
+			return cards[i].Value < cards[j].Value
+		}
+
+		return cards[i].Suit < cards[j].Suit
+	})
+
+	return cards
+}
+
+func StringifyCards(cards []Card) (out string) {
+	for _, card := range cards {
+		out = out + card.ToString() + "\n"
+	}
+
+	return out
 }
