@@ -40,7 +40,7 @@ const (
 type Game struct {
 	pile          *map[int][]Card
 	players       *[4]Player
-	activePlayer  Player
+	activePlayer  *Player
 	currentFormat Format
 }
 
@@ -66,13 +66,13 @@ func NewGame() Game {
 		}
 	}
 
-	baseGame.activePlayer = activePlayer
+	baseGame.activePlayer = &activePlayer
 
 	return baseGame
 }
 
 func (game *Game) ActivePlayer() *Player {
-	return &game.activePlayer
+	return game.activePlayer
 }
 
 func (game *Game) Pile() *map[int][]Card {
@@ -119,10 +119,26 @@ func (game *Game) PlayMove(cards []Card) error {
 		return err
 	}
 
+	if game.currentFormat != CLEAR && game.currentFormat != format {
+		return fmt.Errorf("This move is not valid for the current format.")
+	}
+
 	game.SetFormat(format)
 	game.AddToPile(cards)
+	game.SelectNextActivePlayer()
 
 	return nil
+}
+
+func (game *Game) SelectNextActivePlayer() {
+	var activePlayerIndex int
+	for i, player := range game.players {
+		if player.id == game.activePlayer.id {
+			activePlayerIndex = i
+		}
+	}
+
+	*game.activePlayer = game.players[(activePlayerIndex+1)%4]
 }
 
 func analyzePlay(cards []Card) (Format, error) {

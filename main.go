@@ -21,7 +21,7 @@ func main() {
 
 	pile := game.Pile()
 	for _, play := range *pile {
-		fmt.Printf("---START PLAY---\n%s\n---END PLAY---\n", thirteen.StringifyCards(play))
+		fmt.Printf("---START PLAY---\n%s---END PLAY---\n", thirteen.StringifyCards(play))
 	}
 
 	game.Log()
