@@ -45,28 +45,39 @@ type Game struct {
 }
 
 func NewGame() Game {
-	baseGame := Game{pile: &map[int][]Card{}}
+	baseGame := Game{pile: &map[int][]Card{}, currentFormat: SINGLE}
 	deck := ShuffleDeck(NewDeck())
-	playerOne := NewPlayer("Player One", baseGame.PlayMove)
-	playerTwo := NewPlayer("Player Two", baseGame.PlayMove)
-	playerThree := NewPlayer("Player Three", baseGame.PlayMove)
-	playerFour := NewPlayer("Player Four", baseGame.PlayMove)
+	playerOne := NewUserPlayer("Player One", baseGame.PlayMove)
+	playerTwo := NewUserPlayer("Player Two", baseGame.PlayMove)
+	playerThree := NewUserPlayer("Player Three", baseGame.PlayMove)
+	playerFour := NewUserPlayer("Player Four", baseGame.PlayMove)
 
-	players := [4]Player{playerOne, playerTwo, playerThree, playerFour}
+	autoOne := NewAutoPlayer(&playerOne, &baseGame.currentFormat, baseGame.pile)
+	autoTwo := NewAutoPlayer(&playerTwo, &baseGame.currentFormat, baseGame.pile)
+	autoThree := NewAutoPlayer(&playerThree, &baseGame.currentFormat, baseGame.pile)
+	autoFour := NewAutoPlayer(&playerFour, &baseGame.currentFormat, baseGame.pile)
 
-	Deal(deck, &players)
+	autoPlayers := [4]AutoPlayer{autoOne, autoTwo, autoThree, autoFour}
 
-	baseGame.players = &players
+	Deal(deck, autoPlayers)
 
-	var activePlayer Player
+	castedPlayers := CastToPlayers(autoPlayers)
 
-	for _, player := range players {
-		if player.HasCard(SPADE, THREE) {
+	baseGame.players = &castedPlayers
+
+	var activePlayer AutoPlayer
+
+	for _, player := range autoPlayers {
+		log.Printf("player: %s\n%v", player.BasePlayer.name, player.BasePlayer.cards)
+		if player.BasePlayer.HasCard(SPADE, THREE) {
+			log.Printf("%s is active", player.BasePlayer.name)
 			activePlayer = player
 		}
 	}
 
-	baseGame.activePlayer = &activePlayer
+	castedPlayer := CastToPlayer(activePlayer)
+
+	baseGame.activePlayer = &castedPlayer
 
 	return baseGame
 }
@@ -80,15 +91,14 @@ func (game *Game) Pile() *map[int][]Card {
 }
 
 func (game Game) Log() {
-	log.Printf("Active Player: %s\n", game.activePlayer.name)
+	log.Printf("Active Player: %s\n", (*game.activePlayer).Name())
 	log.Printf("Current Format: %v\n", game.currentFormat)
-	log.Printf("Pile has:\n%v\n", *game.pile)
 	for _, player := range game.players {
 		var playerLog string
-		playerLog = fmt.Sprintf("%sPlayer: %s\n", playerLog, player.name)
-		playerLog = fmt.Sprintf("%sCards:\n", playerLog)
-		for _, card := range *player.cards {
-			playerLog = fmt.Sprintf("%s%s\n", playerLog, card.ToString())
+		playerLog = fmt.Sprintf("%sPlayer: %s\n", playerLog, player.Name())
+		playerLog = fmt.Sprintf("%sCards (%d):\n", playerLog, player.CardCount())
+		for _, card := range *player.Cards() {
+			playerLog = fmt.Sprintf("%s%s\n", playerLog, card.String())
 		}
 
 		log.Println(playerLog)
@@ -109,6 +119,12 @@ func (game *Game) AddToPile(cards []Card) {
 	currentPile[playsInPile] = cards
 
 	game.pile = &currentPile
+
+	log.Println("---PILE START---")
+	for _, play := range *game.pile {
+		log.Println(StringifyCards(play))
+	}
+	log.Println("---PILE END---")
 }
 
 func (game *Game) PlayMove(cards []Card) error {
@@ -133,7 +149,8 @@ func (game *Game) PlayMove(cards []Card) error {
 func (game *Game) SelectNextActivePlayer() {
 	var activePlayerIndex int
 	for i, player := range game.players {
-		if player.id == game.activePlayer.id {
+		activePlayer := *game.activePlayer
+		if player.Id() == activePlayer.Id() {
 			activePlayerIndex = i
 		}
 	}

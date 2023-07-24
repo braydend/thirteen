@@ -1,6 +1,7 @@
 package thirteen
 
 import (
+	"log"
 	"math/rand"
 	"sort"
 )
@@ -9,7 +10,11 @@ type Deck = []Card
 
 func NewDeck() (deck Deck) {
 	for i := 0; i < 52; i++ {
-		deck = append(deck, NewCard(Value(i%13+3), Suit(i%4)))
+		card, err := NewCard(Value(i%13+3), Suit(i%4+1))
+		if err != nil {
+			log.Fatalf("Failed to create card. %v", err)
+		}
+		deck = append(deck, card)
 	}
 
 	return deck
@@ -25,7 +30,7 @@ func ShuffleDeck(deck Deck) Deck {
 	return deck
 }
 
-func Deal(deck Deck, players *[4]Player) {
+func Deal[P Player](deck Deck, players [4]P) {
 	for i, card := range deck {
 		players[i%4].AddCard(&card)
 	}
