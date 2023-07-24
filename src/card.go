@@ -2,6 +2,8 @@ package thirteen
 
 import (
 	"fmt"
+	"log"
+	"math"
 	"sort"
 )
 
@@ -25,10 +27,10 @@ const (
 )
 
 const (
-	SPADE Suit = iota
-	CLUB
-	DIAMOND
-	HEART
+	SPADE   Suit = 1
+	CLUB    Suit = 2
+	DIAMOND Suit = 3
+	HEART   Suit = 4
 )
 
 type Card struct {
@@ -36,12 +38,20 @@ type Card struct {
 	Value Value
 }
 
-func NewCard(value Value, suit Suit) Card {
-	return Card{Suit: suit, Value: value}
+func NewCard(value Value, suit Suit) (Card, error) {
+	if value < 3 || value > 15 {
+		return Card{}, fmt.Errorf("Invalid value: %d", value)
+	}
+
+	if suit == 0 || suit > 4 {
+		return Card{}, fmt.Errorf("Invalid suit: %d", value)
+	}
+
+	return Card{Suit: suit, Value: value}, nil
 }
 
 // TODO: Use stringer to generate these
-func (card *Card) SuitName() string {
+func (card *Card) suitName() string {
 	switch card.Suit {
 	case DIAMOND:
 		return "Diamond"
@@ -56,7 +66,7 @@ func (card *Card) SuitName() string {
 	return ""
 }
 
-func (card *Card) ValueName() string {
+func (card *Card) valueName() string {
 	switch card.Value {
 	case THREE:
 		return "Three"
@@ -89,20 +99,20 @@ func (card *Card) ValueName() string {
 	return ""
 }
 
-func (card *Card) ToString() string {
-	suit := card.SuitName()
-	value := card.ValueName()
+func (card Card) String() string {
+	suit := card.suitName()
+	value := card.valueName()
 
 	return fmt.Sprintf("%s of %ss", value, suit)
 }
 
 func SortCards(cards []Card) []Card {
 	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].Suit == cards[j].Suit {
-			return cards[i].Value < cards[j].Value
+		if cards[i].Value == cards[j].Value {
+			return cards[i].Suit < cards[j].Suit
 		}
 
-		return cards[i].Suit < cards[j].Suit
+		return cards[i].Value < cards[j].Value
 	})
 
 	return cards
@@ -110,8 +120,15 @@ func SortCards(cards []Card) []Card {
 
 func StringifyCards(cards []Card) (out string) {
 	for _, card := range cards {
-		out = out + card.ToString() + "\n"
+		out = out + card.String() + "\n"
 	}
 
 	return out
+}
+
+func (card Card) Score() int {
+	score := int(math.Pow(float64(card.Value), float64(card.Suit)))
+
+	log.Printf("%s has the score: %d", card.String(), score)
+	return score
 }

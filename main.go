@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	thirteen "github.com/braydend/thirteen/src"
@@ -12,17 +11,26 @@ func main() {
 
 	game.Log()
 
-	player := game.ActivePlayer()
-	err := player.PlayMove([]thirteen.Card{thirteen.NewCard(thirteen.THREE, thirteen.SPADE)})
+	// player := game.ActivePlayer()
+	// err := player.Player().PlayMove([]thirteen.Card{thirteen.NewCard(thirteen.THREE, thirteen.SPADE)})
+
+	canPlay, err := (*game.ActivePlayer()).Play()
 
 	if err != nil {
 		log.Fatalf("Failed to play move. %s", err)
 	}
 
-	pile := game.Pile()
-	for _, play := range *pile {
-		fmt.Printf("---START PLAY---\n%s---END PLAY---\n", thirteen.StringifyCards(play))
+	game.SetFormat(thirteen.SINGLE)
+
+	game.Log()
+
+	_, err = (*game.ActivePlayer()).Play()
+
+	if err != nil {
+		log.Fatalln(err)
 	}
+
+	log.Printf("Can play: %v\n", canPlay)
 
 	game.Log()
 }

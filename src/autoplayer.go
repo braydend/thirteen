@@ -1,70 +1,137 @@
 package thirteen
 
-/*
-requires:
-- a hand
-- reference to format
-- reference to pile
-
-will need to:
-- check can play based on the format
-- check play will beat latest play in pile
-*/
+import (
+	"log"
+	"sort"
+)
 
 type AutoPlayer struct {
-	player *Player
-	format *Format
-	pile   *map[int][]Card
+	BasePlayer    *UserPlayer
+	CurrentFormat *Format
+	CurrentPile   *map[int][]Card
 }
 
-func NewAutoPlayer(player *Player, format *Format, pile *map[int][]Card) AutoPlayer {
+func NewAutoPlayer(player *UserPlayer, format *Format, pile *map[int][]Card) AutoPlayer {
 	return AutoPlayer{player, format, pile}
 }
 
-func (ap *AutoPlayer) Play() bool {
+func (ap AutoPlayer) AddCard(card *Card) {
+	ap.BasePlayer.AddCard(card)
+}
+
+func (ap AutoPlayer) CardCount() uint8 {
+	return uint8(len(*ap.BasePlayer.cards))
+}
+
+func (ap AutoPlayer) Id() string {
+	return ap.BasePlayer.id
+}
+
+func (ap AutoPlayer) Name() string {
+	return ap.BasePlayer.name
+}
+
+func (ap AutoPlayer) Cards() *[]Card {
+	return ap.BasePlayer.cards
+}
+
+func (ap *AutoPlayer) Player() *UserPlayer {
+	return ap.BasePlayer
+}
+
+func (ap AutoPlayer) Play() (bool, error) {
 	play := ap.BuildPlay()
 
+	log.Printf("Available plays for (%v) %s: %d\n", *ap.CurrentFormat, ap.BasePlayer.name, len(play))
+
 	if len(play) == 0 {
-		return false
+		return false, nil
 	}
 
-	return true
+	err := ap.BasePlayer.PlayMove(play)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (ap AutoPlayer) HasCard(suit Suit, value Value) bool {
+	for _, card := range *ap.Cards() {
+		if card.Suit == suit && card.Value == value {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (ap AutoPlayer) RemoveCard(card Card) error {
+	var remainingCards []Card
+	for _, cardInHand := range *ap.Cards() {
+		if card.Suit != cardInHand.Suit || card.Value != cardInHand.Value {
+			remainingCards = append(remainingCards, cardInHand)
+		}
+	}
+
+	*ap.BasePlayer.cards = remainingCards
+
+	return nil
 }
 
 func (ap *AutoPlayer) BuildPlay() []Card {
-	format := ap.format
-	cards := ap.player.cards
-	pileLength := len(*ap.pile)
-	pile := *ap.pile
+	format := *ap.CurrentFormat
+	cards := ap.Cards()
+	pileLength := len(*ap.CurrentPile)
+	pile := *ap.CurrentPile
 	lastPlay := pile[pileLength]
 
-	validPlays := map[int][]Card{}
+	validPlays := [][]Card{}
 
-	switch *format {
+	switch format {
 	case SINGLE:
+		fallthrough
 	case PAIR:
+		fallthrough
 	case TRIPLE:
+		fallthrough
 	case QUAD:
-		plays := buildMatchPlays(*cards, int(*format))
-		for i, play := range plays {
-			validPlays[i] = play
+		plays := buildMatchPlays(*cards, int(format))
+		for _, play := range plays {
+			validPlays = append(validPlays, play)
 		}
 		break
 	default:
-		runLength := *format - 2
+		runLength := format - 2
 		isFlush := runLength > 13
 		if isFlush {
-			runLength = runLength - 13
+			runLength = runLength - 11
 		}
 		plays := buildRunPlays(*cards, int(runLength), isFlush)
-		for i, play := range plays {
-			validPlays[i] = play
+		for _, play := range plays {
+			validPlays = append(validPlays, play)
 		}
 		break
 	}
 
+	sort.Slice(validPlays, func(i, j int) bool {
+		iSorted := SortCards(validPlays[i])
+		jSorted := SortCards(validPlays[j])
+
+		iHighest := iSorted[len(iSorted)-1]
+		jHighest := jSorted[len(jSorted)-1]
+
+		if iHighest.Value == jHighest.Value {
+			return iHighest.Suit < jHighest.Suit
+		}
+
+		return iHighest.Value < jHighest.Value
+	})
+
 	for _, play := range validPlays {
-		if isPlayHigherValue(lastPlay, play) {
+		if isPlayHigherValue(lastPlay, play, format) {
+			log.Printf("Playing: %v", StringifyCards(play))
 			return play
 		}
 	}
@@ -72,9 +139,19 @@ func (ap *AutoPlayer) BuildPlay() []Card {
 	return []Card{}
 }
 
-func isPlayHigherValue(previousPlay []Card, currentPlay []Card) bool {
+func isPlayHigherValue(previousPlay []Card, currentPlay []Card, format Format) bool {
+	isFirstPlay := len(previousPlay) == 0 || format == CLEAR
+
+	if isFirstPlay {
+		return true
+	}
+
 	prevHighest := previousPlay[len(previousPlay)-1]
 	curHighest := currentPlay[len(currentPlay)-1]
+
+	if curHighest.Value < prevHighest.Value {
+		return false
+	}
 
 	if curHighest.Value > prevHighest.Value {
 		return true
@@ -96,8 +173,9 @@ func buildSinglePlays(hand []Card) (plays map[int][]Card) {
 	return plays
 }
 
-func buildMatchPlays(hand []Card, matchLength int) (plays map[int][]Card) {
+func buildMatchPlays(hand []Card, matchLength int) map[int][]Card {
 	sortedHand := SortCards(hand)
+	plays := make(map[int][]Card)
 
 	for i := range sortedHand {
 		match := buildMatchFromOffset(hand, i, matchLength)
@@ -111,8 +189,9 @@ func buildMatchPlays(hand []Card, matchLength int) (plays map[int][]Card) {
 	return plays
 }
 
-func buildRunPlays(hand []Card, runLength int, isFlush bool) (plays map[int][]Card) {
+func buildRunPlays(hand []Card, runLength int, isFlush bool) map[int][]Card {
 	sortedHand := SortCards(hand)
+	plays := make(map[int][]Card)
 
 	for i := range sortedHand {
 		run := buildRunFromOffset(hand, i, runLength, isFlush)
@@ -127,19 +206,38 @@ func buildRunPlays(hand []Card, runLength int, isFlush bool) (plays map[int][]Ca
 }
 
 func buildRunFromOffset(cards []Card, offset int, runLength int, isFlush bool) (out []Card) {
-	sortedCards := SortCards(cards[offset:])
+	offsetCards := cards[offset:]
+
+	if isFlush {
+		offsetCards = filterCards(cards, func(card Card) bool {
+			return card.Suit == offsetCards[0].Suit
+		})
+	}
+
+	if len(offsetCards) < runLength {
+		return []Card{}
+	}
+
+	sortedCards := SortCards(offsetCards)
+
+	sortedLength := len(sortedCards)
 
 	for i, card := range sortedCards {
 		if runLength == len(out) {
 			return out
 		}
-		if len(sortedCards) >= i+2 {
-			isFlushCompatible := card.Suit == sortedCards[i+1].Suit
 
-			if isNextCardValue(card, sortedCards[i+1]) {
-				if isFlush && !isFlushCompatible {
-					return []Card{}
-				}
+		if i+1 <= sortedLength {
+			if len(out) == 0 {
+				out = append(out, card)
+				continue
+			}
+
+			if out[len(out)-1].Value == card.Value {
+				continue
+			}
+
+			if out[len(out)-1].Value+1 == card.Value {
 				out = append(out, card)
 			} else {
 				return []Card{}
@@ -161,16 +259,20 @@ func buildMatchFromOffset(cards []Card, offset int, matchLength int) (out []Card
 	}
 
 	if len(sameValueCards) >= matchLength {
-		return sameValueCards[:matchLength-1]
+		return sameValueCards[:matchLength]
 	}
 
 	return out
 }
 
-func isNextCardValue(prev Card, next Card) bool {
-	return prev.Value+1 == next.Value
-}
+func filterCards(cards []Card, test func(card Card) bool) []Card {
+	filteredCards := []Card{}
 
-func isSameCardValue(prev Card, next Card) bool {
-	return prev.Value == next.Value
+	for _, card := range cards {
+		if test(card) {
+			filteredCards = append(filteredCards, card)
+		}
+	}
+
+	return filteredCards
 }
