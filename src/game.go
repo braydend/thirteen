@@ -49,44 +49,94 @@ type Game struct {
 
 func NewGame() Game {
 	baseGame := Game{pile: &map[int][]Card{}, currentFormat: SINGLE}
+	// deck := ShuffleDeck(NewDeck())
+	// playerOne := NewUserPlayer("Player One", baseGame.PlayMove)
+	// playerTwo := NewUserPlayer("Player Two", baseGame.PlayMove)
+	// playerThree := NewUserPlayer("Player Three", baseGame.PlayMove)
+	// playerFour := NewUserPlayer("Player Four", baseGame.PlayMove)
+
+	// autoOne := NewAutoPlayer(&playerOne, &baseGame.currentFormat, baseGame.pile)
+	// autoTwo := NewAutoPlayer(&playerTwo, &baseGame.currentFormat, baseGame.pile)
+	// autoThree := NewAutoPlayer(&playerThree, &baseGame.currentFormat, baseGame.pile)
+	// autoFour := NewAutoPlayer(&playerFour, &baseGame.currentFormat, baseGame.pile)
+
+	// autoPlayers := [4]AutoPlayer{autoOne, autoTwo, autoThree, autoFour}
+
+	// Deal(deck, autoPlayers)
+
+	// castedPlayers := CastToPlayers(autoPlayers)
+
+	// baseGame.players = &castedPlayers
+	baseGame.players = &[4]Player{}
+
+	// var activePlayer AutoPlayer
+
+	// for _, player := range autoPlayers {
+	// 	log.Printf("player: %s\n%v", player.BasePlayer.name, player.BasePlayer.cards)
+	// 	if player.BasePlayer.HasCard(SPADE, THREE) {
+	// 		log.Printf("%s is active", player.BasePlayer.name)
+	// 		activePlayer = player
+	// 	}
+	// }
+
+	// castedPlayer := CastToPlayer(activePlayer)
+
+	// baseGame.activePlayer = &castedPlayer
+
+	return baseGame
+}
+
+func (game Game) Start() error {
+	if game.PlayerCount() != 4 {
+		return fmt.Errorf("Game requires 4 players to start and there are only %d.", len(game.players))
+	}
+
 	deck := ShuffleDeck(NewDeck())
-	playerOne := NewUserPlayer("Player One", baseGame.PlayMove)
-	playerTwo := NewUserPlayer("Player Two", baseGame.PlayMove)
-	playerThree := NewUserPlayer("Player Three", baseGame.PlayMove)
-	playerFour := NewUserPlayer("Player Four", baseGame.PlayMove)
+	castedPlayers := CastToPlayers(*game.players)
+	Deal(deck, castedPlayers)
 
-	autoOne := NewAutoPlayer(&playerOne, &baseGame.currentFormat, baseGame.pile)
-	autoTwo := NewAutoPlayer(&playerTwo, &baseGame.currentFormat, baseGame.pile)
-	autoThree := NewAutoPlayer(&playerThree, &baseGame.currentFormat, baseGame.pile)
-	autoFour := NewAutoPlayer(&playerFour, &baseGame.currentFormat, baseGame.pile)
+	var activePlayer Player
 
-	autoPlayers := [4]AutoPlayer{autoOne, autoTwo, autoThree, autoFour}
-
-	Deal(deck, autoPlayers)
-
-	castedPlayers := CastToPlayers(autoPlayers)
-
-	baseGame.players = &castedPlayers
-
-	var activePlayer AutoPlayer
-
-	for _, player := range autoPlayers {
-		log.Printf("player: %s\n%v", player.BasePlayer.name, player.BasePlayer.cards)
-		if player.BasePlayer.HasCard(SPADE, THREE) {
-			log.Printf("%s is active", player.BasePlayer.name)
+	for _, player := range castedPlayers {
+		log.Printf("player: %s\n%v", player.Name(), player.Cards())
+		if player.HasCard(SPADE, THREE) {
+			log.Printf("%s is active", player.Name())
 			activePlayer = player
 		}
 	}
 
 	castedPlayer := CastToPlayer(activePlayer)
 
-	baseGame.activePlayer = &castedPlayer
+	game.activePlayer = &castedPlayer
 
-	return baseGame
+	return nil
 }
 
-func (game *Game) ActivePlayer() *Player {
+func (game Game) AddPlayer(player Player) error {
+	currentPlayerCount := game.PlayerCount()
+
+	if currentPlayerCount == 4 {
+		return fmt.Errorf("Cannot have more than 4 players.")
+	}
+
+	game.players[currentPlayerCount] = player
+
+	return nil
+}
+
+func (game Game) ActivePlayer() *Player {
 	return game.activePlayer
+}
+
+func (game Game) PlayerCount() int {
+	count := 0
+	for _, player := range *game.players {
+		if player != nil {
+			count += 1
+		}
+	}
+
+	return count
 }
 
 func (game *Game) Pile() *map[int][]Card {

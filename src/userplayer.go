@@ -14,6 +14,9 @@ type UserPlayer struct {
 	playMove func(cards []Card) error
 }
 
+// TODO: Add fn for SetPlayFn() to Player interface
+// playFn is currently tied into user player but needs to be used across all
+// implementations of Player interface
 func NewUserPlayer(name string, playFn func(cards []Card) error) UserPlayer {
 	uuid, err := uuid.NewRandom()
 
