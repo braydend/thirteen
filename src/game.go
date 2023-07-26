@@ -38,6 +38,9 @@ const (
 )
 
 type Game struct {
+	// TODO: Change the key in this map to a player or player id
+	// This will allow the game to keep track of the player with the most recent play
+	// Will also need to keep track of which players have passed on the play
 	pile          *map[int][]Card
 	players       *[4]Player
 	activePlayer  *Player
