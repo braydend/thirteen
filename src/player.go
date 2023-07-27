@@ -27,7 +27,7 @@ type Player struct {
 	id       string
 	name     string
 	cards    *[]Card
-	playMove func(cards []Card) error
+	playMove func(hand []Card) error
 	isCpu    bool
 	gameData GameData
 }
