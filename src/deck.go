@@ -30,7 +30,7 @@ func ShuffleDeck(deck Deck) Deck {
 	return deck
 }
 
-func Deal[P Player](deck Deck, players [4]P) {
+func Deal(deck Deck, players [4]Player) {
 	for i, card := range deck {
 		players[i%4].AddCard(&card)
 	}

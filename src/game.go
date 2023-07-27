@@ -37,51 +37,21 @@ const (
 	THIRTEEN_RUN_FLUSH
 )
 
+type Pile = map[int][]Card
+
 type Game struct {
 	// TODO: Change the key in this map to a player or player id
 	// This will allow the game to keep track of the player with the most recent play
 	// Will also need to keep track of which players have passed on the play
-	pile          *map[int][]Card
+	// Could even add a struct to contain the format, all plays in the format, skipped players
+	pile          *Pile
 	players       *[4]Player
 	activePlayer  *Player
 	currentFormat Format
 }
 
 func NewGame() Game {
-	baseGame := Game{pile: &map[int][]Card{}, currentFormat: SINGLE}
-	// deck := ShuffleDeck(NewDeck())
-	// playerOne := NewUserPlayer("Player One", baseGame.PlayMove)
-	// playerTwo := NewUserPlayer("Player Two", baseGame.PlayMove)
-	// playerThree := NewUserPlayer("Player Three", baseGame.PlayMove)
-	// playerFour := NewUserPlayer("Player Four", baseGame.PlayMove)
-
-	// autoOne := NewAutoPlayer(&playerOne, &baseGame.currentFormat, baseGame.pile)
-	// autoTwo := NewAutoPlayer(&playerTwo, &baseGame.currentFormat, baseGame.pile)
-	// autoThree := NewAutoPlayer(&playerThree, &baseGame.currentFormat, baseGame.pile)
-	// autoFour := NewAutoPlayer(&playerFour, &baseGame.currentFormat, baseGame.pile)
-
-	// autoPlayers := [4]AutoPlayer{autoOne, autoTwo, autoThree, autoFour}
-
-	// Deal(deck, autoPlayers)
-
-	// castedPlayers := CastToPlayers(autoPlayers)
-
-	// baseGame.players = &castedPlayers
-	baseGame.players = &[4]Player{}
-
-	// var activePlayer AutoPlayer
-
-	// for _, player := range autoPlayers {
-	// 	log.Printf("player: %s\n%v", player.BasePlayer.name, player.BasePlayer.cards)
-	// 	if player.BasePlayer.HasCard(SPADE, THREE) {
-	// 		log.Printf("%s is active", player.BasePlayer.name)
-	// 		activePlayer = player
-	// 	}
-	// }
-
-	// castedPlayer := CastToPlayer(activePlayer)
-
-	// baseGame.activePlayer = &castedPlayer
+	baseGame := Game{pile: &map[int][]Card{}, currentFormat: SINGLE, players: &[4]Player{}}
 
 	return baseGame
 }
@@ -92,22 +62,45 @@ func (game Game) Start() error {
 	}
 
 	deck := ShuffleDeck(NewDeck())
-	castedPlayers := CastToPlayers(*game.players)
-	Deal(deck, castedPlayers)
+	Deal(deck, *game.players)
 
-	var activePlayer Player
-
-	for _, player := range castedPlayers {
+	for _, player := range game.players {
 		log.Printf("player: %s\n%v", player.Name(), player.Cards())
 		if player.HasCard(SPADE, THREE) {
 			log.Printf("%s is active", player.Name())
-			activePlayer = player
+			game.activePlayer = &player
 		}
 	}
 
-	castedPlayer := CastToPlayer(activePlayer)
+	err := game.beginGameLoop()
 
-	game.activePlayer = &castedPlayer
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (game Game) beginGameLoop() error {
+	skippedPlayers := []string{}
+	for true {
+		// if all other players have skipped, reset the format and skipped players
+		if len(skippedPlayers) == 3 {
+			skippedPlayers = []string{}
+			game.SetFormat(CLEAR)
+		}
+
+		activePlayer := *game.activePlayer
+		canPlay, err := activePlayer.Play(game.Format(), *game.Pile())
+
+		if !canPlay {
+			skippedPlayers = append(skippedPlayers, activePlayer.Id())
+		}
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -131,7 +124,7 @@ func (game Game) ActivePlayer() *Player {
 func (game Game) PlayerCount() int {
 	count := 0
 	for _, player := range *game.players {
-		if player != nil {
+		if len(player.id) > 0 {
 			count += 1
 		}
 	}
@@ -166,7 +159,7 @@ func (game *Game) SetFormat(format Format) {
 	game.currentFormat = format
 }
 
-func (game *Game) AddToPile(cards []Card) {
+func (game Game) AddToPile(cards []Card) {
 	playsInPile := len(*game.pile)
 	currentPile := *game.pile
 	currentPile[playsInPile] = cards
@@ -180,7 +173,7 @@ func (game *Game) AddToPile(cards []Card) {
 	log.Println("---PILE END---")
 }
 
-func (game *Game) PlayMove(cards []Card) error {
+func (game Game) PlayMove(cards []Card) error {
 	log.Printf("Playing move with cards:\n%s\n", StringifyCards(cards))
 	format, err := analyzePlay(cards)
 
@@ -194,16 +187,19 @@ func (game *Game) PlayMove(cards []Card) error {
 
 	game.SetFormat(format)
 	game.AddToPile(cards)
-	game.SelectNextActivePlayer()
+	game.selectNextActivePlayer()
 
 	return nil
 }
 
-func (game *Game) SelectNextActivePlayer() {
+func (game Game) selectNextActivePlayer() {
+	// This pointer is nil here. Not sure why
+	activePlayer := *game.activePlayer
+	activePlayerId := activePlayer.Id()
 	var activePlayerIndex int
 	for i, player := range game.players {
-		activePlayer := *game.activePlayer
-		if player.Id() == activePlayer.Id() {
+		playerId := player.Id()
+		if playerId == activePlayerId {
 			activePlayerIndex = i
 		}
 	}

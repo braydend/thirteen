@@ -26,19 +26,21 @@ func TestAddPlayer(t *testing.T) {
 		expectedPlayerCount int
 	}
 
+	stubPlayer := thirteen.NewPlayer("Stub Player", func(cards []thirteen.Card) error { return nil })
+
 	testCases := []testCase{
-		{"Can add one player", testInput{[]thirteen.Player{thirteen.UserPlayer{}}}, false, 1},
+		{"Can add one player", testInput{[]thirteen.Player{stubPlayer}}, false, 1},
 		{"Can add two players", testInput{
-			[]thirteen.Player{thirteen.UserPlayer{}, thirteen.UserPlayer{}},
+			[]thirteen.Player{stubPlayer, stubPlayer},
 		}, false, 2},
 		{"Can add three players", testInput{
-			[]thirteen.Player{thirteen.UserPlayer{}, thirteen.UserPlayer{}, thirteen.UserPlayer{}},
+			[]thirteen.Player{stubPlayer, stubPlayer, stubPlayer},
 		}, false, 3},
 		{"Can add four players", testInput{
-			[]thirteen.Player{thirteen.UserPlayer{}, thirteen.UserPlayer{}, thirteen.UserPlayer{}, thirteen.UserPlayer{}},
+			[]thirteen.Player{stubPlayer, stubPlayer, stubPlayer, stubPlayer},
 		}, false, 4},
 		{"Cannot add five players", testInput{
-			[]thirteen.Player{thirteen.UserPlayer{}, thirteen.UserPlayer{}, thirteen.UserPlayer{}, thirteen.UserPlayer{}, thirteen.UserPlayer{}},
+			[]thirteen.Player{stubPlayer, stubPlayer, stubPlayer, stubPlayer, thirteen.Player{}},
 		}, true, 4},
 	}
 
@@ -83,5 +85,23 @@ func TestStartErrors(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
+	game := thirteen.NewGame()
+	playerOne := thirteen.NewPlayer("P1", game.PlayMove)
+	playerOne.SetCPU(true)
+	playerTwo := thirteen.NewPlayer("P2", game.PlayMove)
+	playerTwo.SetCPU(true)
+	playerThree := thirteen.NewPlayer("P3", game.PlayMove)
+	playerThree.SetCPU(true)
+	playerFour := thirteen.NewPlayer("P4", game.PlayMove)
+	playerFour.SetCPU(true)
+	game.AddPlayer(playerOne)
+	game.AddPlayer(playerTwo)
+	game.AddPlayer(playerThree)
+	game.AddPlayer(playerFour)
 
+	err := game.Start()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
