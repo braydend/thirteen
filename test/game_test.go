@@ -86,13 +86,13 @@ func TestStartErrors(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	game := thirteen.NewGame()
-	playerOne := thirteen.NewPlayer("P1", game.PlayMove)
+	playerOne := thirteen.NewPlayer("P1", thirteen.PlayMove(&game))
 	playerOne.SetCPU(true)
-	playerTwo := thirteen.NewPlayer("P2", game.PlayMove)
+	playerTwo := thirteen.NewPlayer("P2", thirteen.PlayMove(&game))
 	playerTwo.SetCPU(true)
-	playerThree := thirteen.NewPlayer("P3", game.PlayMove)
+	playerThree := thirteen.NewPlayer("P3", thirteen.PlayMove(&game))
 	playerThree.SetCPU(true)
-	playerFour := thirteen.NewPlayer("P4", game.PlayMove)
+	playerFour := thirteen.NewPlayer("P4", thirteen.PlayMove(&game))
 	playerFour.SetCPU(true)
 	game.AddPlayer(playerOne)
 	game.AddPlayer(playerTwo)

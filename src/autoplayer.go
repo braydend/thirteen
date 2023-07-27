@@ -2,6 +2,7 @@ package thirteen
 
 import (
 	"log"
+	"math/rand"
 	"sort"
 )
 
@@ -20,6 +21,10 @@ func buildPlay(cards []Card, format Format, pile Pile) []Card {
 	lastPlay := pile[pileLength]
 
 	validPlays := [][]Card{}
+
+	if format == CLEAR {
+		format = uint8(rand.Intn(25) + 1)
+	}
 
 	switch format {
 	case SINGLE:
