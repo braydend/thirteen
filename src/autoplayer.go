@@ -5,86 +5,18 @@ import (
 	"sort"
 )
 
-type AutoPlayer struct {
-	BasePlayer    *UserPlayer
-	CurrentFormat *Format
-	CurrentPile   *map[int][]Card
-}
-
-func NewAutoPlayer(player *UserPlayer, format *Format, pile *map[int][]Card) AutoPlayer {
-	return AutoPlayer{player, format, pile}
-}
-
-func (ap AutoPlayer) AddCard(card *Card) {
-	ap.BasePlayer.AddCard(card)
-}
-
-func (ap AutoPlayer) CardCount() uint8 {
-	return uint8(len(*ap.BasePlayer.cards))
-}
-
-func (ap AutoPlayer) Id() string {
-	return ap.BasePlayer.id
-}
-
-func (ap AutoPlayer) Name() string {
-	return ap.BasePlayer.name
-}
-
-func (ap AutoPlayer) Cards() *[]Card {
-	return ap.BasePlayer.cards
-}
-
-func (ap *AutoPlayer) Player() *UserPlayer {
-	return ap.BasePlayer
-}
-
-func (ap AutoPlayer) Play() (bool, error) {
-	play := ap.BuildPlay()
-
-	log.Printf("Available plays for (%v) %s: %d\n", *ap.CurrentFormat, ap.BasePlayer.name, len(play))
+func AutoPlay(hand []Card, format Format, pile Pile) ([]Card, error) {
+	play := buildPlay(hand, format, pile)
 
 	if len(play) == 0 {
-		return false, nil
+		return []Card{}, nil
 	}
 
-	err := ap.BasePlayer.PlayMove(play)
-
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return play, nil
 }
 
-func (ap AutoPlayer) HasCard(suit Suit, value Value) bool {
-	for _, card := range *ap.Cards() {
-		if card.Suit == suit && card.Value == value {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (ap AutoPlayer) RemoveCard(card Card) error {
-	var remainingCards []Card
-	for _, cardInHand := range *ap.Cards() {
-		if card.Suit != cardInHand.Suit || card.Value != cardInHand.Value {
-			remainingCards = append(remainingCards, cardInHand)
-		}
-	}
-
-	*ap.BasePlayer.cards = remainingCards
-
-	return nil
-}
-
-func (ap *AutoPlayer) BuildPlay() []Card {
-	format := *ap.CurrentFormat
-	cards := ap.Cards()
-	pileLength := len(*ap.CurrentPile)
-	pile := *ap.CurrentPile
+func buildPlay(cards []Card, format Format, pile Pile) []Card {
+	pileLength := len(pile)
 	lastPlay := pile[pileLength]
 
 	validPlays := [][]Card{}
@@ -97,7 +29,7 @@ func (ap *AutoPlayer) BuildPlay() []Card {
 	case TRIPLE:
 		fallthrough
 	case QUAD:
-		plays := buildMatchPlays(*cards, int(format))
+		plays := buildMatchPlays(cards, int(format))
 		for _, play := range plays {
 			validPlays = append(validPlays, play)
 		}
@@ -108,7 +40,7 @@ func (ap *AutoPlayer) BuildPlay() []Card {
 		if isFlush {
 			runLength = runLength - 11
 		}
-		plays := buildRunPlays(*cards, int(runLength), isFlush)
+		plays := buildRunPlays(cards, int(runLength), isFlush)
 		for _, play := range plays {
 			validPlays = append(validPlays, play)
 		}

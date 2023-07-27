@@ -87,11 +87,11 @@ func TestDeal(t *testing.T) {
 	stubPlayFn := func(_ []thirteen.Card) error {
 		return nil
 	}
-	players := [4]thirteen.UserPlayer{
-		thirteen.NewUserPlayer("Stub Player One", stubPlayFn),
-		thirteen.NewUserPlayer("Stub Player Two", stubPlayFn),
-		thirteen.NewUserPlayer("Stub Player Three", stubPlayFn),
-		thirteen.NewUserPlayer("Stub Player Four", stubPlayFn),
+	players := [4]thirteen.Player{
+		thirteen.NewPlayer("Stub Player One", stubPlayFn),
+		thirteen.NewPlayer("Stub Player Two", stubPlayFn),
+		thirteen.NewPlayer("Stub Player Three", stubPlayFn),
+		thirteen.NewPlayer("Stub Player Four", stubPlayFn),
 	}
 
 	deck := thirteen.NewDeck()
