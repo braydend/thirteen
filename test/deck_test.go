@@ -84,14 +84,12 @@ func TestShuffleDeck(t *testing.T) {
 }
 
 func TestDeal(t *testing.T) {
-	stubPlayFn := func(_ []thirteen.Card) error {
-		return nil
-	}
+	stubGame := thirteen.Game{}
 	players := [4]thirteen.Player{
-		thirteen.NewPlayer("Stub Player One", stubPlayFn),
-		thirteen.NewPlayer("Stub Player Two", stubPlayFn),
-		thirteen.NewPlayer("Stub Player Three", stubPlayFn),
-		thirteen.NewPlayer("Stub Player Four", stubPlayFn),
+		thirteen.NewPlayer("Stub Player One", &stubGame),
+		thirteen.NewPlayer("Stub Player Two", &stubGame),
+		thirteen.NewPlayer("Stub Player Three", &stubGame),
+		thirteen.NewPlayer("Stub Player Four", &stubGame),
 	}
 
 	deck := thirteen.NewDeck()

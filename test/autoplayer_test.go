@@ -16,12 +16,17 @@ func TestBuildPlaySingle(t *testing.T) {
 	expectedPlay := []thirteen.Card{
 		{Suit: thirteen.HEART, Value: thirteen.QUEEN},
 	}
-	result, _ := thirteen.AutoPlay(cards, thirteen.SINGLE, thirteen.Pile{})
+	currentFormat := thirteen.SINGLE
+	result, format, _ := thirteen.AutoPlay(cards, &currentFormat, thirteen.Pile{})
 
 	isEqual := reflect.DeepEqual(result, expectedPlay)
 
 	if !isEqual {
 		t.Errorf("%v does not equal the expected %v", result, expectedPlay)
+	}
+
+	if format != thirteen.SINGLE {
+		t.Errorf("%v is not a single card", result)
 	}
 }
 
@@ -69,14 +74,17 @@ func TestBuildPlayMatch(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		result, _ := thirteen.AutoPlay(testCase.input.cards, testCase.input.format, thirteen.Pile{})
+		currentFormat := testCase.input.format
+		result, format, _ := thirteen.AutoPlay(testCase.input.cards, &currentFormat, thirteen.Pile{})
 
 		isEqual := reflect.DeepEqual(result, testCase.expected)
 
 		if !isEqual {
 			t.Errorf("%s failed. %v does not equal the expected %v", testCase.label, thirteen.StringifyCards(result), thirteen.StringifyCards(testCase.expected))
 		}
-
+		if format != testCase.input.format {
+			t.Errorf("%s failed. %v is not the correct format: %v", testCase.label, thirteen.StringifyCards(result), testCase.input.format)
+		}
 	}
 }
 
@@ -136,7 +144,8 @@ func TestBuildPlayRun(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		result, _ := thirteen.AutoPlay(testCase.input.cards, testCase.input.format, thirteen.Pile{})
+		currentFormat := testCase.input.format
+		result, format, _ := thirteen.AutoPlay(testCase.input.cards, &currentFormat, thirteen.Pile{})
 
 		isEqual := reflect.DeepEqual(result, testCase.expected)
 
@@ -144,5 +153,8 @@ func TestBuildPlayRun(t *testing.T) {
 			t.Errorf("%s failed. %v does not equal the expected %v", testCase.label, thirteen.StringifyCards(result), thirteen.StringifyCards(testCase.expected))
 		}
 
+		if format != testCase.input.format {
+			t.Errorf("%s failed. %v is not the correct format: %v", testCase.label, thirteen.StringifyCards(result), testCase.input.format)
+		}
 	}
 }

@@ -7,17 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// type Player interface {
-// 	AddCard(card *Card)
-// 	CardCount() uint8
-// 	Id() string
-// 	Name() string
-// 	Cards() *[]Card
-// 	Play() (bool, error)
-// 	HasCard(suit Suit, value Value) bool
-// 	RemoveCard(card Card) error
-// }
-
 type GameData struct {
 	format *Format
 	pile   *Pile
@@ -27,22 +16,19 @@ type Player struct {
 	id       string
 	name     string
 	cards    *[]Card
-	playMove func(hand []Card) error
+	game     *Game
 	isCpu    bool
 	gameData GameData
 }
 
-// TODO: Add fn for SetPlayFn() to Player interface
-// playFn is currently tied into user player but needs to be used across all
-// implementations of Player interface
-func NewPlayer(name string, playFn func(cards []Card) error) Player {
+func NewPlayer(name string, game *Game) Player {
 	uuid, err := uuid.NewRandom()
 
 	if err != nil {
 		log.Fatalf("Failed to generate UUID for player. %s", err)
 	}
 
-	return Player{id: uuid.String(), name: name, cards: &[]Card{}, playMove: playFn}
+	return Player{id: uuid.String(), name: name, cards: &[]Card{}, game: game}
 }
 
 func (player Player) Id() string {
@@ -76,15 +62,20 @@ func (player Player) CardCount() uint8 {
 	return uint8(len(*player.cards))
 }
 
-func (player Player) Play(format Format, pile Pile) (bool, error) {
+func (player *Player) Play() (bool, error) {
 	if player.isCpu {
-		play, err := AutoPlay(*player.Cards(), format, pile)
+		currentFormat := player.game.Format()
+		play, playedFormat, err := AutoPlay(*player.Cards(), currentFormat, player.game.Pile())
+
+		if len(play) == 0 {
+			return false, fmt.Errorf("No plays available")
+		}
 
 		if err != nil {
 			return false, err
 		}
 
-		err = player.playMove(play)
+		err = player.game.playMove(play, playedFormat)
 
 		if err != nil {
 			return false, err
@@ -122,25 +113,6 @@ func (player Player) HasCard(suit Suit, value Value) bool {
 
 	return false
 }
-
-// func (player *Player) PlayMove(cards []Card) error {
-// 	log.Printf("%s attempting to play the following cards:\n", player.name)
-// 	for _, card := range cards {
-// 		log.Println(card.String())
-// 	}
-
-// 	err := player.playMove(cards)
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	for _, currentCard := range cards {
-// 		player.RemoveCard(currentCard)
-// 	}
-
-// 	return nil
-// }
 
 func (player Player) RemoveCard(card Card) error {
 	var remainingCards []Card

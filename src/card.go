@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"sort"
+	"strings"
 )
 
 type Suit = uint8
@@ -119,11 +120,12 @@ func SortCards(cards []Card) []Card {
 }
 
 func StringifyCards(cards []Card) (out string) {
+	var cardStrings []string
 	for _, card := range cards {
-		out = out + card.String() + "\n"
+		cardStrings = append(cardStrings, card.String())
 	}
 
-	return out
+	return strings.Join(cardStrings, ",")
 }
 
 func (card Card) Score() int {
