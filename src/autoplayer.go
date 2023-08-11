@@ -6,25 +6,46 @@ import (
 	"sort"
 )
 
-func AutoPlay(hand []Card, format Format, pile Pile) ([]Card, error) {
-	play := buildPlay(hand, format, pile)
+func AutoPlay(hand []Card, format *Format, pile Pile) ([]Card, Format, error) {
+	if *format == CLEAR {
+		possibleFormats := []Format{}
+		allPlays := buildPlaysForAllFormats(hand)
+		for k, _ := range allPlays {
+			possibleFormats = append(possibleFormats, k)
+		}
+		selectedFormat := possibleFormats[rand.Intn(len(possibleFormats))]
+
+		return allPlays[selectedFormat], selectedFormat, nil
+	}
+
+	play, playedFormat := buildPlay(hand, *format, pile)
 
 	if len(play) == 0 {
-		return []Card{}, nil
+		return []Card{}, 0, nil
 	}
 
-	return play, nil
+	return play, playedFormat, nil
 }
 
-func buildPlay(cards []Card, format Format, pile Pile) []Card {
-	pileLength := len(pile)
-	lastPlay := pile[pileLength]
+func buildPlaysForAllFormats(hand []Card) map[Format][]Card {
+	plays := make(map[Format][]Card)
+	emptyPile := make(map[int][]Card)
 
-	validPlays := [][]Card{}
-
-	if format == CLEAR {
-		format = uint8(rand.Intn(25) + 1)
+	for i := 1; i < 25; i++ {
+		format := Format(i)
+		play, _ := buildPlay(hand, format, emptyPile)
+		if len(play) > 0 {
+			plays[format] = play
+		}
 	}
+
+	return plays
+}
+
+func buildPlay(cards []Card, format Format, pile Pile) ([]Card, Format) {
+	pileLength := len(pile)
+	lastPlay := pile[pileLength-1]
+	validPlays := [][]Card{}
 
 	switch format {
 	case SINGLE:
@@ -67,13 +88,16 @@ func buildPlay(cards []Card, format Format, pile Pile) []Card {
 	})
 
 	for _, play := range validPlays {
+		if len(lastPlay) == 0 {
+			return play, format
+		}
 		if isPlayHigherValue(lastPlay, play, format) {
 			log.Printf("Playing: %v", StringifyCards(play))
-			return play
+			return play, format
 		}
 	}
 
-	return []Card{}
+	return []Card{}, 0
 }
 
 func isPlayHigherValue(previousPlay []Card, currentPlay []Card, format Format) bool {
@@ -101,41 +125,40 @@ func isPlayHigherValue(previousPlay []Card, currentPlay []Card, format Format) b
 	return false
 }
 
-func buildSinglePlays(hand []Card) (plays map[int][]Card) {
+func buildSinglePlays(hand []Card) [][]Card {
 	sortedHand := SortCards(hand)
+	plays := [][]Card{}
 
-	for i, card := range sortedHand {
-		plays[i] = []Card{card}
+	for _, card := range sortedHand {
+		plays = append(plays, []Card{card})
 	}
 	return plays
 }
 
-func buildMatchPlays(hand []Card, matchLength int) map[int][]Card {
+func buildMatchPlays(hand []Card, matchLength int) [][]Card {
 	sortedHand := SortCards(hand)
-	plays := make(map[int][]Card)
+	plays := [][]Card{}
 
 	for i := range sortedHand {
 		match := buildMatchFromOffset(hand, i, matchLength)
 
 		if len(match) == matchLength {
-			index := len(plays)
-			plays[index] = match
+			plays = append(plays, match)
 		}
 	}
 
 	return plays
 }
 
-func buildRunPlays(hand []Card, runLength int, isFlush bool) map[int][]Card {
+func buildRunPlays(hand []Card, runLength int, isFlush bool) [][]Card {
 	sortedHand := SortCards(hand)
-	plays := make(map[int][]Card)
+	plays := [][]Card{}
 
 	for i := range sortedHand {
 		run := buildRunFromOffset(hand, i, runLength, isFlush)
 
 		if len(run) == runLength {
-			index := len(plays)
-			plays[index] = run
+			plays = append(plays, run)
 		}
 	}
 

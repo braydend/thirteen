@@ -8,8 +8,9 @@ import (
 
 func TestNewGame(t *testing.T) {
 	result := thirteen.NewGame()
+	expectedFormat := result.Format()
 
-	if result.Format() != thirteen.SINGLE {
+	if *expectedFormat != thirteen.SINGLE {
 		t.Errorf("Game should start with SINGLE format, but got %v", result.Format())
 	}
 }
@@ -26,7 +27,9 @@ func TestAddPlayer(t *testing.T) {
 		expectedPlayerCount int
 	}
 
-	stubPlayer := thirteen.NewPlayer("Stub Player", func(cards []thirteen.Card) error { return nil })
+	stubGame := thirteen.Game{}
+
+	stubPlayer := thirteen.NewPlayer("Stub Player", &stubGame)
 
 	testCases := []testCase{
 		{"Can add one player", testInput{[]thirteen.Player{stubPlayer}}, false, 1},
@@ -86,13 +89,13 @@ func TestStartErrors(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	game := thirteen.NewGame()
-	playerOne := thirteen.NewPlayer("P1", thirteen.PlayMove(&game))
+	playerOne := thirteen.NewPlayer("P1", &game)
 	playerOne.SetCPU(true)
-	playerTwo := thirteen.NewPlayer("P2", thirteen.PlayMove(&game))
+	playerTwo := thirteen.NewPlayer("P2", &game)
 	playerTwo.SetCPU(true)
-	playerThree := thirteen.NewPlayer("P3", thirteen.PlayMove(&game))
+	playerThree := thirteen.NewPlayer("P3", &game)
 	playerThree.SetCPU(true)
-	playerFour := thirteen.NewPlayer("P4", thirteen.PlayMove(&game))
+	playerFour := thirteen.NewPlayer("P4", &game)
 	playerFour.SetCPU(true)
 	game.AddPlayer(playerOne)
 	game.AddPlayer(playerTwo)
