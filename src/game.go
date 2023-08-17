@@ -76,7 +76,7 @@ func (game *Game) Start() error {
 		}
 	}
 
-	err := game.beginGameLoop()
+	err := game.startGameLoop()
 
 	if err != nil {
 		return err
@@ -85,24 +85,25 @@ func (game *Game) Start() error {
 	return nil
 }
 
-func (game *Game) beginGameLoop() error {
+func (game *Game) resetFormat(skippedPlayers *map[string]Player) {
+	*skippedPlayers = make(map[string]Player)
+	game.pile.SetFormat(CLEAR)
+	winningPlayer := game.pile.LatestPlay().player
+	var winningPlayerIndex int
+	for i, player := range game.players {
+		if player.Id() == winningPlayer.Id() {
+			winningPlayerIndex = i
+		}
+	}
+	game.SetActivePlayerIndex(winningPlayerIndex)
+}
+
+func (game *Game) startGameLoop() error {
 	skippedPlayers := make(map[string]Player)
 	finishedPlayers := make(map[string]Player)
-	// TODO: Make this end condition more correct.
-	// e.g. 3/4 players have 0 cards
 	for len(finishedPlayers) < 1 {
-		// if all other players have skipped, reset the format and skipped players
 		if len(skippedPlayers) == 3 {
-			skippedPlayers = make(map[string]Player)
-			game.pile.SetFormat(CLEAR)
-			winningPlayer := game.pile.LatestPlay().player
-			var winningPlayerIndex int
-			for i, player := range game.players {
-				if player.Id() == winningPlayer.Id() {
-					winningPlayerIndex = i
-				}
-			}
-			game.SetActivePlayerIndex(winningPlayerIndex)
+			game.resetFormat(&skippedPlayers)
 		}
 		log.Printf("Current format: %s\n", game.pile.Format())
 
