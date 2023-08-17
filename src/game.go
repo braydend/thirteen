@@ -3,7 +3,6 @@ package thirteen
 import (
 	"fmt"
 	"log"
-	"sort"
 )
 
 type Format int
@@ -40,7 +39,7 @@ const (
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=Format
 
-type Pile = map[int][]Card
+// type Pile = map[int][]Card
 
 type Game struct {
 	// TODO: Change the key in this map to a player or player id
@@ -50,11 +49,13 @@ type Game struct {
 	pile              Pile
 	players           [4]Player
 	activePlayerIndex int
-	currentFormat     Format
+	// currentFormat     Format
 }
 
 func NewGame() Game {
-	baseGame := Game{pile: map[int][]Card{}, currentFormat: SINGLE, players: [4]Player{}}
+	pile := NewPile()
+	pile.SetFormat(SINGLE)
+	baseGame := Game{pile: pile, players: [4]Player{}}
 
 	return baseGame
 }
@@ -93,21 +94,29 @@ func (game *Game) beginGameLoop() error {
 		// if all other players have skipped, reset the format and skipped players
 		if len(skippedPlayers) == 3 {
 			skippedPlayers = make(map[string]Player)
-			game.SetFormat(CLEAR)
+			game.pile.SetFormat(CLEAR)
+			winningPlayer := game.pile.LatestPlay().player
+			var winningPlayerIndex int
+			for i, player := range game.players {
+				if player.Id() == winningPlayer.Id() {
+					winningPlayerIndex = i
+				}
+			}
+			game.SetActivePlayerIndex(winningPlayerIndex)
 		}
-		log.Printf("Current format: %s\n", game.Format())
+		log.Printf("Current format: %s\n", game.pile.Format())
 
 		activePlayer := game.ActivePlayer()
 		log.Printf("Active Player: %s\n", activePlayer.name)
-		if activePlayer.CardCount() == 0 {
-			finishedPlayers[activePlayer.id] = activePlayer
-		}
 
 		_, isSkipped := skippedPlayers[activePlayer.id]
 		_, isFinished := finishedPlayers[activePlayer.id]
 
 		if !isFinished && !isSkipped {
 			canPlay, err := activePlayer.Play()
+			if activePlayer.CardCount() == 0 {
+				finishedPlayers[activePlayer.id] = activePlayer
+			}
 
 			if !canPlay {
 				log.Printf("%s cant play: %s.", activePlayer.Name(), err)
@@ -160,13 +169,13 @@ func (game Game) PlayerCount() int {
 	return count
 }
 
-func (game Game) Pile() map[int][]Card {
-	return game.pile
+func (game *Game) Pile() *Pile {
+	return &game.pile
 }
 
 func (game Game) Log() {
 	log.Printf("Active Player: %s\n", game.ActivePlayer().Name())
-	log.Printf("Current Format: %v\n", game.currentFormat)
+	log.Printf("Current Format: %v\n", game.pile.Format())
 	for _, player := range game.players {
 		var playerLog string
 		playerLog = fmt.Sprintf("%sPlayer: %s\n", playerLog, player.Name())
@@ -179,44 +188,19 @@ func (game Game) Log() {
 	}
 }
 
-func (game *Game) Format() *Format {
-	return &game.currentFormat
-}
-
-func (game *Game) SetFormat(format Format) {
-	game.currentFormat = format
-}
-
-func (game *Game) AddToPile(cards []Card) {
-	playsInPile := len(game.pile)
-	game.pile[playsInPile] = cards
-
-	log.Println("---PILE START---")
-	var playOrder []int
-	for k, _ := range game.pile {
-		playOrder = append(playOrder, k)
-	}
-
-	sort.Ints(playOrder)
-
-	for _, order := range playOrder {
-		log.Printf("%d: %s", order, StringifyCards(game.pile[order]))
-	}
-	log.Println("---PILE END---")
-}
-
-func (game *Game) playMove(cards []Card, format Format) error {
+func (game *Game) playMove(cards []Card, format Format, player *Player) error {
 	log.Printf("Playing move with cards:\n%s\n", StringifyCards(cards))
 
-	if game.currentFormat != CLEAR && game.currentFormat != format {
+	if game.pile.Format() != CLEAR && game.pile.Format() != format {
 		return fmt.Errorf("This move is not valid for the current format.")
 	}
 
-	currentFormat := game.Format()
-	if format != *currentFormat {
-		game.SetFormat(format)
+	pile := game.Pile()
+	pile.AddPlay(Play{player: player, cards: cards, format: format})
+	currentFormat := pile.Format()
+	if format != currentFormat {
+		pile.SetFormat(format)
 	}
-	game.AddToPile(cards)
 
 	return nil
 }
