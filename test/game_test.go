@@ -8,10 +8,10 @@ import (
 
 func TestNewGame(t *testing.T) {
 	result := thirteen.NewGame()
-	expectedFormat := result.Format()
+	expectedFormat := thirteen.SINGLE
 
-	if *expectedFormat != thirteen.SINGLE {
-		t.Errorf("Game should start with SINGLE format, but got %v", result.Format())
+	if expectedFormat != result.Pile().Format() {
+		t.Errorf("Game should start with SINGLE format, but got %v", result.Pile().Format())
 	}
 }
 

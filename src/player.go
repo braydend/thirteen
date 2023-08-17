@@ -64,8 +64,8 @@ func (player Player) CardCount() uint8 {
 
 func (player *Player) Play() (bool, error) {
 	if player.isCpu {
-		currentFormat := player.game.Format()
-		play, playedFormat, err := AutoPlay(*player.Cards(), currentFormat, player.game.Pile())
+		currentFormat := player.game.pile.Format()
+		play, playedFormat, err := AutoPlay(*player.Cards(), &currentFormat, *player.game.Pile())
 
 		if len(play) == 0 {
 			return false, fmt.Errorf("No plays available")
@@ -75,7 +75,7 @@ func (player *Player) Play() (bool, error) {
 			return false, err
 		}
 
-		err = player.game.playMove(play, playedFormat)
+		err = player.game.playMove(play, playedFormat, player)
 
 		if err != nil {
 			return false, err

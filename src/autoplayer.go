@@ -29,7 +29,7 @@ func AutoPlay(hand []Card, format *Format, pile Pile) ([]Card, Format, error) {
 
 func buildPlaysForAllFormats(hand []Card) map[Format][]Card {
 	plays := make(map[Format][]Card)
-	emptyPile := make(map[int][]Card)
+	emptyPile := NewPile()
 
 	for i := 1; i < 25; i++ {
 		format := Format(i)
@@ -43,8 +43,7 @@ func buildPlaysForAllFormats(hand []Card) map[Format][]Card {
 }
 
 func buildPlay(cards []Card, format Format, pile Pile) ([]Card, Format) {
-	pileLength := len(pile)
-	lastPlay := pile[pileLength-1]
+	lastPlay := pile.LatestPlay().cards
 	validPlays := [][]Card{}
 
 	switch format {
