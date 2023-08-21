@@ -60,6 +60,11 @@ func NewGame() Game {
 	return baseGame
 }
 
+func (game *Game) Players() *[4]Player {
+	players := game.players
+	return &players
+}
+
 func (game *Game) Start() error {
 	if game.PlayerCount() != 4 {
 		return fmt.Errorf("Game requires 4 players to start and there are only %d.", len(game.players))
